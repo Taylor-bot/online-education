@@ -3,12 +3,15 @@ package com.atguigu.vod.controller;
 import com.atguigu.commonutils.R;
 import com.atguigu.vod.service.VideoService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @Api(description="阿里云视频点播微服务")
@@ -18,6 +21,7 @@ public class VideoAdminController {
 
     @Autowired
     VideoService videoService;
+
 
 
     @ApiOperation(value = "上传阿里云视频")
@@ -38,4 +42,15 @@ public class VideoAdminController {
         videoService.removeVideo(videoId);
         return R.ok().message("视频删除成功");
     }
+
+
+    @ApiOperation("批量删除阿里云视频")
+    @DeleteMapping("video_ids")
+    public R deleteVideos(@ApiParam(name = "videoIdList", value = "云端视频id", required = true)
+                          @RequestParam("videoList")List<String> videoList){
+
+        videoService.deleteVideos(videoList);
+        return R.ok().message("视频删除成功");
+    }
+
 }

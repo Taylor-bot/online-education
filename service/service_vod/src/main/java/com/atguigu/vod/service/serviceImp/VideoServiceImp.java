@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -67,6 +68,27 @@ public class VideoServiceImp implements VideoService {
 
         } catch (ClientException e) {
             throw new GuliException(20001, "视频删除失败");
+        }
+    }
+
+    @Override
+    public void deleteVideos(List<String> videoList) {
+        try {
+            DefaultAcsClient client = AliyunVodSdkUtils.initVodClient(
+                    ConstantProperties.ACCESS_KEY_ID,
+                    ConstantProperties.ACCESS_KEY_SECRET
+            );
+
+            String strBatchs = org.apache.commons.lang.StringUtils.join(videoList.toArray(), ",");
+            DeleteVideoRequest request = new DeleteVideoRequest();
+            request.setVideoIds(strBatchs);
+
+            //get the response
+            DeleteVideoResponse acsResponse = client.getAcsResponse(request);
+            System.out.print("RequestId = " + acsResponse.getRequestId() + "\n");
+
+        } catch (ClientException e) {
+            throw new GuliException(20009, "视频批量删除失败");
         }
     }
 }

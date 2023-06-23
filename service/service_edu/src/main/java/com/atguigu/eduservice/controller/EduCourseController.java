@@ -99,7 +99,7 @@ public class EduCourseController {
     @DeleteMapping("delete/{id}")
     @ApiOperation(value = "逻辑删除course")
     public R deleteCourse(
-            @ApiParam(name = "courseId", value = "id", required = true)
+            @ApiParam(name = "id", value = "id", required = true)
             @PathVariable String id
             ) {
         boolean result = courseService.deleteById(id);

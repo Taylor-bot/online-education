@@ -1,5 +1,7 @@
 package com.atguigu.eduservice.service.impl;
 
+import com.alibaba.excel.event.AbstractIgnoreExceptionReadListener;
+import com.atguigu.eduservice.client.VodClient;
 import com.atguigu.eduservice.entity.EduVideo;
 import com.atguigu.eduservice.entity.vo.VideoForm;
 import com.atguigu.eduservice.mapper.EduVideoMapper;
@@ -7,8 +9,11 @@ import com.atguigu.eduservice.service.EduVideoService;
 import com.atguigu.servicebase.exceptionhandler.GuliException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.poi.util.StringUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.management.Query;
 import java.util.ArrayList;
@@ -25,6 +30,8 @@ import java.util.List;
 @Service
 public class EduVideoServiceImpl extends ServiceImpl<EduVideoMapper, EduVideo> implements EduVideoService {
 
+    @Autowired
+    VodClient vodClient;
     @Override
     public boolean getCountByChapterId(String id) {
         QueryWrapper<EduVideo> wrapper = new QueryWrapper<>();
@@ -71,7 +78,12 @@ public class EduVideoServiceImpl extends ServiceImpl<EduVideoMapper, EduVideo> i
     @Override
     public boolean removeVideoById(String id) {
 
-        //删除视频资源 TODO
+        //删除视频资源
+        EduVideo video = baseMapper.selectById(id);
+        String videoSourceId = video.getVideoSourceId();
+        if (!StringUtils.isEmpty(videoSourceId)) {
+            vodClient.removeVideo(videoSourceId);
+        }
 
         Integer result = baseMapper.deleteById(id);
         return null != result && result > 0;    }
@@ -80,7 +92,26 @@ public class EduVideoServiceImpl extends ServiceImpl<EduVideoMapper, EduVideo> i
     public boolean removeByCourseId(String id) {
         QueryWrapper<EduVideo> wrapper = new QueryWrapper<>();
         wrapper.eq("course_id", id);
-        Integer result = baseMapper.delete(wrapper);
+        wrapper.select("video_source_id");
+        List<EduVideo> videoList = baseMapper.selectList(wrapper);
+
+        //得到所有视频列表的云端原始视频id
+        List<String> videoSourceList = new ArrayList<>();
+        for (EduVideo video : videoList) {
+            if (!StringUtils.isEmpty(video)){
+                videoSourceList.add(video.getVideoSourceId());
+
+            }
+        }
+        //调用vod服务删除远程视频
+        //得到所有视频列表的云端原始视频id
+        if (videoSourceList.size() > 0) {
+            vodClient.deleteVideos(videoSourceList);
+        }
+
+        QueryWrapper<EduVideo> wrapper1 = new QueryWrapper<>();
+        wrapper1.eq("course_id", id);
+        Integer result = baseMapper.delete(wrapper1);
         return null != result && result > 0;
     }
 
