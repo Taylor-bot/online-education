@@ -1,6 +1,7 @@
 package com.atguigu.eduservice.client;
 
 import com.atguigu.commonutils.R;
+import com.atguigu.eduservice.client.clientImpl.VodClientImpl;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-@FeignClient("service-vod")
+@FeignClient(name = "service-vod", fallback = VodClientImpl.class)
 @Component
 public interface VodClient {
 

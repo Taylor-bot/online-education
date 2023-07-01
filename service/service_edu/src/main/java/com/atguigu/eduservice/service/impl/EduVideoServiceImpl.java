@@ -1,6 +1,7 @@
 package com.atguigu.eduservice.service.impl;
 
 import com.alibaba.excel.event.AbstractIgnoreExceptionReadListener;
+import com.atguigu.commonutils.R;
 import com.atguigu.eduservice.client.VodClient;
 import com.atguigu.eduservice.entity.EduVideo;
 import com.atguigu.eduservice.entity.vo.VideoForm;
@@ -82,7 +83,10 @@ public class EduVideoServiceImpl extends ServiceImpl<EduVideoMapper, EduVideo> i
         EduVideo video = baseMapper.selectById(id);
         String videoSourceId = video.getVideoSourceId();
         if (!StringUtils.isEmpty(videoSourceId)) {
-            vodClient.removeVideo(videoSourceId);
+            R r = vodClient.removeVideo(videoSourceId);
+            if (r.getCode() ==20001){
+                throw new GuliException(20009, "熔断器。。。");
+            }
         }
 
         Integer result = baseMapper.deleteById(id);
